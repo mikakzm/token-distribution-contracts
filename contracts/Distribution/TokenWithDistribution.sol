@@ -37,6 +37,8 @@ contract TokenWithDistribution is OwnableUpgradeable, IERC20Upgradeable {
     string private _name;
     string private _symbol;
 
+    uint256 constant public maxPercentage = 10000;
+
     event ChangeLevel(address indexed account, uint256 level);
 
     function __TokenWithDistribution_init(string memory __name, string memory __symbol, address payable _fund_wallet, uint256 _initialSupply) internal onlyInitializing {
@@ -57,7 +59,11 @@ contract TokenWithDistribution is OwnableUpgradeable, IERC20Upgradeable {
         fund_wallet = _fund_wallet;
     }
 
-    function _mintAndDistribute(uint256 amount) internal {
+    function _mintAndDistribute(uint256 amount, uint256[3] memory distributionPercentage) internal {
+        require(
+            distributionPercentage[0].add(distributionPercentage[1]).add(distributionPercentage[2]) == maxPercentage, 
+            "Distribution: sum of distribution percentages must be 10000"
+        );
 
         require(
             amount > 0,
@@ -67,18 +73,18 @@ contract TokenWithDistribution is OwnableUpgradeable, IERC20Upgradeable {
         require(totalLevelSupply[2] > 0, "Distribution: total supply of VIP level two is zero");
 
         if (totalLevelSupply[2] != 0) {
-            currentBC[2] = currentBC[2].mul((totalLevelSupply[2].add(amount.div(4))));
+            currentBC[2] = currentBC[2].mul((totalLevelSupply[2].add(amount.mul(distributionPercentage[2]).div(maxPercentage))));
             currentBC[2] = currentBC[2].div(totalLevelSupply[2]);
         }
         if (totalLevelSupply[1] != 0) {
-            currentBC[1] = currentBC[1].mul((totalLevelSupply[1].add(amount.div(4))));
+            currentBC[1] = currentBC[1].mul((totalLevelSupply[1].add(amount.mul(distributionPercentage[1]).div(maxPercentage))));
             currentBC[1] = currentBC[1].div(totalLevelSupply[1]);
         }
       
-        _balances[fund_wallet] = _balances[fund_wallet].add(amount.div(2));
-        totalLevelSupply[0] = totalLevelSupply[0].add(amount.div(2));
-        totalLevelSupply[1] = totalLevelSupply[1].add(amount.div(4));
-        totalLevelSupply[2] = totalLevelSupply[2].add(amount.div(4)); 
+        _balances[fund_wallet] = _balances[fund_wallet].add(amount.mul(distributionPercentage[0]).div(maxPercentage));
+        totalLevelSupply[0] = totalLevelSupply[0].add(amount.mul(distributionPercentage[0]).div(maxPercentage));
+        totalLevelSupply[1] = totalLevelSupply[1].add(amount.mul(distributionPercentage[1]).div(maxPercentage));
+        totalLevelSupply[2] = totalLevelSupply[2].add(amount.mul(distributionPercentage[2]).div(maxPercentage)); 
         _totalSupply = _totalSupply.add(amount);
     }
 
@@ -108,41 +114,41 @@ contract TokenWithDistribution is OwnableUpgradeable, IERC20Upgradeable {
         emit ChangeLevel(account, newLvl);
     }
 
-    function _mintForVIP(address account, uint256 amount) internal {
-        require(levels[account] != 0, "Distribution: account is not VIP");
-        require(totalLevelSupply[1] > 0, "Distribution: total supply of VIP level one is zero");
-        require(totalLevelSupply[2] > 0, "Distribution: total supply of VIP level two is zero");
+    // function _mintForVIP(address account, uint256 amount) internal {
+    //     require(levels[account] != 0, "Distribution: account is not VIP");
+    //     require(totalLevelSupply[1] > 0, "Distribution: total supply of VIP level one is zero");
+    //     require(totalLevelSupply[2] > 0, "Distribution: total supply of VIP level two is zero");
 
-        relaxBalance(account);
-        _balances[account] = _balances[account].add(amount);
-        _balances[fund_wallet] = _balances[fund_wallet].add(amount.mul(2));
+    //     relaxBalance(account);
+    //     _balances[account] = _balances[account].add(amount);
+    //     _balances[fund_wallet] = _balances[fund_wallet].add(amount.mul(2));
 
-        uint8 other = 3 - levels[account];
-        currentBC[other] = currentBC[other].mul((totalLevelSupply[other].add(amount)));
-        currentBC[other] = currentBC[other].div(totalLevelSupply[other]);
+    //     uint8 other = 3 - levels[account];
+    //     currentBC[other] = currentBC[other].mul((totalLevelSupply[other].add(amount)));
+    //     currentBC[other] = currentBC[other].div(totalLevelSupply[other]);
 
-        totalLevelSupply[0] = totalLevelSupply[0].add(amount.mul(2));
-        totalLevelSupply[1] = totalLevelSupply[1].add(amount);
-        totalLevelSupply[2] = totalLevelSupply[2].add(amount); 
+    //     totalLevelSupply[0] = totalLevelSupply[0].add(amount.mul(2));
+    //     totalLevelSupply[1] = totalLevelSupply[1].add(amount);
+    //     totalLevelSupply[2] = totalLevelSupply[2].add(amount); 
 
-        _totalSupply = _totalSupply.add(amount.mul(4));
-    }
+    //     _totalSupply = _totalSupply.add(amount.mul(4));
+    // }
 
-    function _mintForNormal(address account, uint256 amount) internal {
-        require(levels[account] == 0, "Distribution: account is not normal");
-        require(totalLevelSupply[1] > 0, "Distribution: total supply of VIP level one is zero");
-        require(totalLevelSupply[2] > 0, "Distribution: total supply of VIP level two is zero");
+    // function _mintForNormal(address account, uint256 amount) internal {
+    //     require(levels[account] == 0, "Distribution: account is not normal");
+    //     require(totalLevelSupply[1] > 0, "Distribution: total supply of VIP level one is zero");
+    //     require(totalLevelSupply[2] > 0, "Distribution: total supply of VIP level two is zero");
 
-        _balances[account] = _balances[account].add(amount);
-        totalLevelSupply[0].add(amount);
+    //     _balances[account] = _balances[account].add(amount);
+    //     totalLevelSupply[0].add(amount);
 
-        for (uint8 i = 1; i <= 2; i++) {
-            currentBC[i] = currentBC[i].mul((totalLevelSupply[i].add(amount.div(2))));
-            currentBC[i] = currentBC[i].div(totalLevelSupply[i]);
-            totalLevelSupply[i] = totalLevelSupply[i].add(amount.div(2));
-        }
-        _totalSupply = _totalSupply.add(amount.mul(2));
-    }
+    //     for (uint8 i = 1; i <= 2; i++) {
+    //         currentBC[i] = currentBC[i].mul((totalLevelSupply[i].add(amount.div(2))));
+    //         currentBC[i] = currentBC[i].div(totalLevelSupply[i]);
+    //         totalLevelSupply[i] = totalLevelSupply[i].add(amount.div(2));
+    //     }
+    //     _totalSupply = _totalSupply.add(amount.mul(2));
+    // }
 
     /**
      * @dev Returns the name of the token.

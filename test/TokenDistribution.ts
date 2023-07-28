@@ -203,7 +203,8 @@ describe("Token Distribution", async () => {
 
         await expect(
             PaytokenS2.mintAndDistribute(
-                oneHundred
+                oneHundred,
+                [5000, 2500, 2500]
             )
         ).to.be.revertedWith("PayToken: caller is not a minter")
     })
@@ -236,7 +237,8 @@ describe("Token Distribution", async () => {
             oneUnit.mul(1000)
         )
         await Paytoken.mintAndDistribute(
-            oneUnit.mul(1000)
+            oneUnit.mul(1000),
+            [5000, 2500, 2500]
         )
 
         expect(
@@ -262,13 +264,28 @@ describe("Token Distribution", async () => {
 		expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(1000)));
     })
 
+    it("sum of distribution percentages must be 1", async () => {
+        await Paytoken.configureMinter(
+            signer1Addr,
+            oneUnit.mul(1000)
+        )
+
+        await expect(
+            Paytoken.mintAndDistribute(
+                oneUnit.mul(1000),
+                [5000, 2500, 100]
+            )
+        ).to.be.revertedWith("Distribution: sum of distribution percentages must be 10000")
+    })
+
 	it("mint, changing level from 0 to level 1, mint again works correctly", async () => {
         await Paytoken.configureMinter(
             signer1Addr,
             oneUnit.mul(3000)
         )
         await Paytoken.mintAndDistribute(
-            oneUnit.mul(1000)
+            oneUnit.mul(1000),
+            [5000, 2500, 2500]
         )
 
 		let oldBalanceCore1 =  await Paytoken.balanceOf(coreSigner1Addr);
@@ -284,7 +301,8 @@ describe("Token Distribution", async () => {
 		).to.equal(core)
 
 		await Paytoken.mintAndDistribute(
-            oneUnit.mul(2000)
+            oneUnit.mul(2000),
+            [5000, 2500, 2500]
         )
         
         expect(
@@ -353,7 +371,8 @@ describe("Token Distribution", async () => {
         )
 
 		await Paytoken.mintAndDistribute(
-            oneUnit.mul(300)
+            oneUnit.mul(300),
+            [5000, 2500, 2500]
         )
 		
 		expect(
@@ -375,119 +394,119 @@ describe("Token Distribution", async () => {
 		expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(300)));
     })
 
-	it("mint to non regular shareholder works correctly", async () => {
-        await Paytoken.configureMinter(
-            signer1Addr,
-            oneUnit.mul(30)
-        )
-		await Paytoken.mintForVIP(
-			coreSigner2Addr,
-            oneUnit.mul(30)
-        );
-        expect(
-            await Paytoken.balanceOf(fundWalletAddr)
-        ).to.equal(oneUnit.mul(60))
+	// it("mint to non regular shareholder works correctly", async () => {
+    //     await Paytoken.configureMinter(
+    //         signer1Addr,
+    //         oneUnit.mul(30)
+    //     )
+	// 	await Paytoken.mintForVIP(
+	// 		coreSigner2Addr,
+    //         oneUnit.mul(30)
+    //     );
+    //     expect(
+    //         await Paytoken.balanceOf(fundWalletAddr)
+    //     ).to.equal(oneUnit.mul(60))
 
-		expect(
-            await Paytoken.balanceOf(founder1Addr)
-        ).to.be.closeTo(oneUnit.mul(400).add(oneUnit.mul(30 * 4).div(9)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(founder1Addr)
+    //     ).to.be.closeTo(oneUnit.mul(400).add(oneUnit.mul(30 * 4).div(9)), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(founder2Addr)
-        ).to.be.closeTo(oneUnit.mul(500).add(oneUnit.mul(30 * 5).div(9)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(founder2Addr)
+    //     ).to.be.closeTo(oneUnit.mul(500).add(oneUnit.mul(30 * 5).div(9)), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(coreSigner2Addr)
-        ).to.be.closeTo(oneUnit.mul(230), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(coreSigner2Addr)
+    //     ).to.be.closeTo(oneUnit.mul(230), epsilon)
 		
-		expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(120)));
-	})
+	// 	expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(120)));
+	// })
 
-	it("mint to regular shareholder works correctly", async () => {
-        await Paytoken.configureMinter(
-            signer1Addr,
-            oneUnit.mul(30)
-        )
+	// it("mint to regular shareholder works correctly", async () => {
+    //     await Paytoken.configureMinter(
+    //         signer1Addr,
+    //         oneUnit.mul(30)
+    //     )
 
-		await Paytoken.mintForNormal(
-			signer2Addr,
-            oneUnit.mul(30)
-        );
+	// 	await Paytoken.mintForNormal(
+	// 		signer2Addr,
+    //         oneUnit.mul(30)
+    //     );
 		    
-		expect(
-            await Paytoken.balanceOf(signer2Addr)
-        ).to.be.closeTo(oneUnit.mul(130), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(signer2Addr)
+    //     ).to.be.closeTo(oneUnit.mul(130), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(founder1Addr)
-        ).to.be.closeTo(oneUnit.mul(400).add(oneUnit.mul(15 * 4).div(9)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(founder1Addr)
+    //     ).to.be.closeTo(oneUnit.mul(400).add(oneUnit.mul(15 * 4).div(9)), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(founder2Addr)
-        ).to.be.closeTo(oneUnit.mul(500).add(oneUnit.mul(15 * 5).div(9)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(founder2Addr)
+    //     ).to.be.closeTo(oneUnit.mul(500).add(oneUnit.mul(15 * 5).div(9)), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(coreSigner1Addr)
-        ).to.be.closeTo(oneUnit.mul(250).add(oneUnit.mul(15 * 25).div(45)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(coreSigner1Addr)
+    //     ).to.be.closeTo(oneUnit.mul(250).add(oneUnit.mul(15 * 25).div(45)), epsilon)
 
-		expect(
-            await Paytoken.balanceOf(coreSigner2Addr)
-        ).to.be.closeTo(oneUnit.mul(200).add(oneUnit.mul(15 * 20).div(45)), epsilon)
+	// 	expect(
+    //         await Paytoken.balanceOf(coreSigner2Addr)
+    //     ).to.be.closeTo(oneUnit.mul(200).add(oneUnit.mul(15 * 20).div(45)), epsilon)
 
-		expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(60)));
+	// 	expect(await Paytoken.totalSupply()).to.equal(_totalSupply.add(oneUnit.mul(60)));
 
-	})
+	// })
 
-	it("mint to regular shareholder doesn't work for non regular shareholders", async () => {
-        await Paytoken.configureMinter(
-            signer1Addr,
-            oneUnit.mul(6000)
-        ) 
+	// it("mint to regular shareholder doesn't work for non regular shareholders", async () => {
+    //     await Paytoken.configureMinter(
+    //         signer1Addr,
+    //         oneUnit.mul(6000)
+    //     ) 
 
-		await expect ( Paytoken.mintForNormal(
-			founder1Addr,
-            oneUnit.mul(2000)
-        )).to.be.revertedWith("Distribution: account is not normal");
+	// 	await expect ( Paytoken.mintForNormal(
+	// 		founder1Addr,
+    //         oneUnit.mul(2000)
+    //     )).to.be.revertedWith("Distribution: account is not normal");
 
-		await expect ( Paytoken.mintForNormal(
-			coreSigner1Addr,
-            oneUnit.mul(2000)
-        )).to.be.revertedWith("Distribution: account is not normal");
+	// 	await expect ( Paytoken.mintForNormal(
+	// 		coreSigner1Addr,
+    //         oneUnit.mul(2000)
+    //     )).to.be.revertedWith("Distribution: account is not normal");
 
-		await Paytoken.changeLevel(
-			signer3Addr,
-			core
-		)
+	// 	await Paytoken.changeLevel(
+	// 		signer3Addr,
+	// 		core
+	// 	)
 
-		await expect ( Paytoken.mintForNormal(
-			signer3Addr,
-            oneUnit.mul(2000)
-        )).to.be.revertedWith("Distribution: account is not normal");
+	// 	await expect ( Paytoken.mintForNormal(
+	// 		signer3Addr,
+    //         oneUnit.mul(2000)
+    //     )).to.be.revertedWith("Distribution: account is not normal");
 
-	})
+	// })
 
-	it("mint to non regular shareholder doesn't work for regular shareholders", async () => {
-        await Paytoken.configureMinter(
-            signer1Addr,
-            oneUnit.mul(4000)
-        )
+	// it("mint to non regular shareholder doesn't work for regular shareholders", async () => {
+    //     await Paytoken.configureMinter(
+    //         signer1Addr,
+    //         oneUnit.mul(4000)
+    //     )
 
-		await expect ( Paytoken.mintForVIP(
-			signer2Addr,
-            oneUnit.mul(2000)
-        )).to.be.revertedWith("Distribution: account is not VIP");
+	// 	await expect ( Paytoken.mintForVIP(
+	// 		signer2Addr,
+    //         oneUnit.mul(2000)
+    //     )).to.be.revertedWith("Distribution: account is not VIP");
 
-		await Paytoken.changeLevel(
-			founder1Addr,
-			user
-		)
+	// 	await Paytoken.changeLevel(
+	// 		founder1Addr,
+	// 		user
+	// 	)
 
-		await expect ( Paytoken.mintForVIP(
-			founder1Addr,
-            oneUnit.mul(2000)
-        )).to.be.revertedWith("Distribution: account is not VIP");
+	// 	await expect ( Paytoken.mintForVIP(
+	// 		founder1Addr,
+    //         oneUnit.mul(2000)
+    //     )).to.be.revertedWith("Distribution: account is not VIP");
 
-	})
+	// })
 
 	it("burn and mint again works correctly", async () => {
         await Paytoken.configureMinter(
@@ -516,7 +535,8 @@ describe("Token Distribution", async () => {
         )
 
 		await Paytoken.mintAndDistribute(
-            oneUnit.mul(300)
+            oneUnit.mul(300),
+            [5000, 2500, 2500]
         )
 
 		expect(

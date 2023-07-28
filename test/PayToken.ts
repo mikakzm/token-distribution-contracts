@@ -211,7 +211,8 @@ describe("PayToken", async () => {
 
         await expect(
             PayTokenS4.mintAndDistribute(
-                oneHundred.mul(4)
+                oneHundred.mul(4),
+                [5000, 2500, 2500]
             )
         ).to.be.revertedWith("PayToken: caller is not a minter")
 
@@ -320,39 +321,39 @@ describe("PayToken", async () => {
 
     })
 
-    it("mint for VIP", async () => {
-        let PayTokenMM = PayToken.connect(masterMinter)
+    // it("mint for VIP", async () => {
+    //     let PayTokenMM = PayToken.connect(masterMinter)
 
-        await PayTokenMM.configureMinter(
-            signer3Addr,
-            oneHundred.mul(4)
-        )
+    //     await PayTokenMM.configureMinter(
+    //         signer3Addr,
+    //         oneHundred.mul(4)
+    //     )
 
-        let PayTokenS3 = PayToken.connect(signer3)
+    //     let PayTokenS3 = PayToken.connect(signer3)
 
-        expect(
-            await PayTokenS3.mintForVIP(
-                vip1Addr,
-                oneHundred.mul(2)
-            )
-        ).to.emit(PayTokenS3, "MintForVIP")
-    })
+    //     expect(
+    //         await PayTokenS3.mintForVIP(
+    //             vip1Addr,
+    //             oneHundred.mul(2)
+    //         )
+    //     ).to.emit(PayTokenS3, "MintForVIP")
+    // })
 
-    it("mint for normal", async () => {
-        let PayTokenMM = PayToken.connect(masterMinter)
+    // it("mint for normal", async () => {
+    //     let PayTokenMM = PayToken.connect(masterMinter)
 
-        await PayTokenMM.configureMinter(
-            signer3Addr,
-            oneHundred.mul(4)
-        )
+    //     await PayTokenMM.configureMinter(
+    //         signer3Addr,
+    //         oneHundred.mul(4)
+    //     )
 
-        let PayTokenS3 = PayToken.connect(signer3)
+    //     let PayTokenS3 = PayToken.connect(signer3)
 
-        expect(
-            await PayTokenS3.mintForNormal(
-                signer4Addr,
-                oneHundred.mul(2)
-            )
-        ).to.emit(PayTokenS3, "MintForNormal")
-    })
+    //     expect(
+    //         await PayTokenS3.mintForNormal(
+    //             signer4Addr,
+    //             oneHundred.mul(2)
+    //         )
+    //     ).to.emit(PayTokenS3, "MintForNormal")
+    // })
 })

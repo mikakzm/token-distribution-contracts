@@ -53,7 +53,7 @@ contract PayToken is TokenWithDistribution {
      * to the minterAllowance of the caller.
      * @return A boolean that indicates if the operation was successful.
      */
-    function mintAndDistribute(uint256 _amount)
+    function mintAndDistribute(uint256 _amount, uint256[3] memory distributionPercentage)
         external
         onlyMinters
         returns (bool)
@@ -65,30 +65,30 @@ contract PayToken is TokenWithDistribution {
         );
 
         minterAllowed[_msgSender()] = mintingAllowedAmount.sub(_amount);
-        _mintAndDistribute(_amount);
+        _mintAndDistribute(_amount, distributionPercentage);
         emit MintAndDistribute(_msgSender(), _amount);
         return true;
     }
 
-    function mintForVIP(address account, uint256 amount)
-        external
-        onlyMinters
-        returns (bool)
-    {
-        _mintForVIP(account, amount);
-        emit MintForVIP(_msgSender(), account, amount);
-        return true;
-    }
+    // function mintForVIP(address account, uint256 amount)
+    //     external
+    //     onlyMinters
+    //     returns (bool)
+    // {
+    //     _mintForVIP(account, amount);
+    //     emit MintForVIP(_msgSender(), account, amount);
+    //     return true;
+    // }
 
-    function mintForNormal(address account, uint256 amount)
-        external
-        onlyMinters
-        returns (bool)
-    {
-        _mintForNormal(account, amount);
-        emit MintForNormal(_msgSender(), account, amount);
-        return true;
-    }
+    // function mintForNormal(address account, uint256 amount)
+    //     external
+    //     onlyMinters
+    //     returns (bool)
+    // {
+    //     _mintForNormal(account, amount);
+    //     emit MintForNormal(_msgSender(), account, amount);
+    //     return true;
+    // }
 
     /**
      * @dev Throws if called by any account other than the masterMinter
