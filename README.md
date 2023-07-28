@@ -3,13 +3,13 @@
 The flow charts provided below are generated with mermaid.js package and can be used to understand the flows of the contracts:
 
 #### Operator Flows
-.![Operator States](../graphs/OperatorFlow.jpeg)
+.![Operator States](./graphs/OperatorFlow.jpeg)
 
 #### Master Minter Flows
-.![User States](../graphs/MasterMinterFlow.jpeg)
+.![User States](./graphs/MasterMinterFlow.jpeg)
 
 #### Minter Flows
-.![User States](../graphs/MinterFlow.jpeg)
+.![User States](./graphs/MinterFlow.jpeg)
 
 
 #### How to run
